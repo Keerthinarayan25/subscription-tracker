@@ -1,11 +1,15 @@
 import { Router } from 'express';
+import { signUp, signIn, signOut } from '../controllers/auth.controller.js';
+// Importing necessary modules and controllers for authentication routes
 
 const authRouter = Router();
 
-authRouter.get('/sign-up', (req, res) => res.send({title : 'Sign Up'}));
+//path: /api/v1/auth/sign-in(POST)
 
-authRouter.post('/sign-in', (req, res) => res.send({title:'Sign in'}));
+authRouter.post('/sign-up', signUp);
 
-authRouter.post('./sign-out',(req, res) => res.send({title:'Sign Out'}));
+authRouter.post('/sign-in', signIn);
+
+authRouter.post('./sign-out', signOut);
 
 export default authRouter;

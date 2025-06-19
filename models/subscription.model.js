@@ -9,7 +9,7 @@ const subscriptionSchema = new mongoose.Schema({
     maxLength: 100
   },
   price:{
-    type:String,
+    type:Number,
     required: [true, 'Subscription price is required'],
     min: [0, 'Price must be grater than 0']
   },
@@ -41,22 +41,21 @@ const subscriptionSchema = new mongoose.Schema({
     type:String,
     required: true,
     validDate: {
-      validDate: (value)=> value <=new Date(),
+      validator: (value)=> value <=new Date(),
       message:'Start date must be in the past'
     }
   },
   renewalDate: {
     type: Date,
-    required: true,
     validDate: {
       validator: function(value){
         return value > this.startDate;
       },
-      message:'Renewal dat must be after start date'
+      message:'Renewal date must be after start date'
     }
   },
   user: {
-    type:mongoose.Schema.Types.ObjectsId,
+    type:mongoose.Schema.Types.ObjectId,
     ref:'User',
     required: true,
     index: true,
@@ -64,27 +63,24 @@ const subscriptionSchema = new mongoose.Schema({
 
 }, { timestamps:true});
 
-subscriptionSchema.pre('save', function(next){
-  if(!this.renewalDate){
+subscriptionSchema.pre('save', function (next) {
+  if (!this.renewalDate && this.startDate && this.frequency) {
     const renewalPeriods = {
-      daily:1,
-      weekly:7,
-      montly:30,
-      yearly:365
+      daily: 1,
+      weekly: 7,
+      monthly: 30,
+      yearly: 365,
     };
 
-    this.renewalDate = new Date(this.startDate);
-    this.renewalDate.setDate(this.renewalDate.getDate() + renewalPeriods[this.frequency]);
+    const days = renewalPeriods[this.frequency];
+    if (days) {
+      this.renewalDate = new Date(this.startDate);
+      this.renewalDate.setDate(this.renewalDate.getDate() + days);
+    }
   }
-
-  if (this.renewalDate < new Date()){
-    this.status = 'exdpired';
-
-  }
-
   next();
 });
 
-const Subscription = mongoose.model('Subcription', subscriptionSchema);
+const Subscription = mongoose.model('Subscription', subscriptionSchema);
 
 export default Subscription;
